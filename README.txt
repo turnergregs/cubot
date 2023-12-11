@@ -14,7 +14,9 @@ MtgCuBot
 - //trophyleader - returns the name of the current trophy leader
 
 TODO
-1. autocomplete cubecobra id input with cubes drafted before (in drafts table)
+1. Autocomplete cubecobra id input with cubes drafted before (in drafts table)
+2. Generate draft bracket and send pairings
+3. Implement /report command
 
 //cube grenrutvintage
 

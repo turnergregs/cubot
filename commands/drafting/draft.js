@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js');
+const { Client, SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js');
 const { Drafts } = require('../../dbObjects.js');
 
 module.exports = {
@@ -122,8 +122,47 @@ module.exports = {
 
 			const buttonId = i.customId;
 			if(buttonId == 'start'){
-				await i.followUp({content: `starting ${cubecobra_id} draft ${draft.id} with ${drafters.length} drafters!`});
+				// starting draft
+				const startMessage = await i.channel.send({
+					content: `${cubecobra_id} draft! (${drafters.length} players)`
+				});
 				await interaction.deleteReply();
+
+				// currently this just randomizes the drafters
+				// in the future, we could implement a ladder or elo system to make a more genuine tournament bracket
+				let shuffled = drafters
+				    .map(value => ({ value, sort: Math.random() }))
+				    .sort((a, b) => a.sort - b.sort)
+				    .map(({ value }) => value)
+
+				// randomized draft seating chart
+				let seatingText = "Draft Seating:";
+				for(let i = 0; i < shuffled.length; i++){
+					seatingText += `\n${i+1}: ${shuffled[i].username}`;
+				}
+
+				await startMessage.reply({content: seatingText});
+
+				// build pairings, including a bye for odd number players
+				pairings = [];
+				if(shuffled.length % 2 !== 0){
+					shuffled.push({username: "bye"});
+				}
+
+				// this will make the pairings cross-pod
+				const matches = shuffled.length / 2;
+				for(let i = 0; i < matches; i += 1){
+					pairings.push([shuffled[i].username, shuffled[i+matches].username]);
+				}
+
+				let pairingText = "Round 1 Pairings:";
+				for(pairing of pairings){
+					pairingText += `\n${pairing[0]} vs ${pairing[1]}`;
+				}
+
+				await startMessage.reply({content: pairingText});
+
+
 			} else if(buttonId == 'close'){
 				await i.followUp({content: `closing draft`});
 				await interaction.deleteReply();

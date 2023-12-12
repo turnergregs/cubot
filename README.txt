@@ -1,95 +1,127 @@
-MtgCuBot
+CuBot is a Magic: The Gathering related bot you can add to your server to help record data about Cube drafts!
 
-//help
+You can operate it using the following slash commands:
 
-+ //cube {cubecobra_id} - links to cubecobra overview with the given id
-+ //pack {cubecobra_id} - links to random cubecobra samplepackimage with the given id
-+ //draft {cubecobra_id} {num_players} - starts a draft of the given cube for the given number of players
-- //join {draft_id} - player joins draft
-- //kick {draft_id} {user_id} - kick player from draft
-- //report {draft_id} {record} {img} - record a draft result for the given draft
-- //record {username} - returns the full draft record of the given user
-- //decks {username} - returns all deck images posted by the given user
-- //decks {cubecobra_id} - returns all deck images for the given cube
-- //trophyleader - returns the name of the current trophy leader
+General
+/help			- List available commands
+/cube {cubecobra_id}	- Link to a cubecobra cube
+/pack {cubecobra_id}	- Display a sample pack from a cubecobra cube
 
-TODO
-1. Autocomplete cubecobra id input with cubes drafted before (in drafts table)
-2. Generate draft bracket and send pairings
-3. Implement /report command
+Drafting
+/draft {cubecobra_id}	- Start recording an IRL cube draft
+/report {draft_id}	- Report the results of an IRL cube draft
 
-//cube grenrutvintage
+Analytics
+/record {username}	- Return the full draft record of a user
+/decks {username} 	- Return all deck images from a user
+/decks {cubecobra_id} 	- Return all deck images for a cube
+/trophyleader 		- returns the name of the current trophy leader
 
-- link cubecobra
+Current main TODO list
+1. Implement /report command
+2. Host bot on a server
+3. Server Roles message
+4. Welcome p1p1 message
+5. Implement all the analytics commands
 
-//pack grenrutvintage
+Ideas backlog
+- Autocomplete cubecobra id input with cubes drafted before (in drafts table)
+- async virtual drafting option
 
-- show random sample pack image
+Slash Command Example Uses
 
-//draft grenrutvintage 8
+/cube grenrutvintage
 
-- set up draft
-- send discord embed that shows:
-	player count
-	link to cube
-	join button for people to join
-	start button IF you did the //draft command
-- sends seating chart once draft starts
-	could have some logic in here to take into account people's records
-- pairings are always cross-pod
+	Sends a message with the following content:
 
-//rc {draft_id} 2-1 {img}
+		https://cubecobra.com/cube/overview/grenrutvintage
 
-- saves draft record object to db with values:
-	name: {username}
-	wins: {wins}
-	losses: {losses}
-	draws: {draws}
-	img: {deck/pool img}
-	cube: {cube_id}
-	created_at: {date created}
+/pack grenrutvintage
 
-//record Turner
+	Sends a message with the following content and a random seed:
 
-- sends message with:
-	Turner has drafted X times
-	Turner has trophied X times
-	total wins: 32
-	total losses: 14
-	total draws: 1
-	drafter since: date of first draft recorded
+		https://cubecobra.com/cube/samplepackimage/grenrutvintage/{seed}
 
-//deckimages 0-3 {username}
-//deckimages 3-0 {cube_id}
+/draft grenrutvintage
 
-- sends images of decks with the specified recorded for that user or that cube
-	if a number in the record is X, will return any record with wins/losses/draws X (X-X-1 is any record with one draw)
+	Sends the following message first:
 
-//trophyleader
+		Created grenrutvintage draft: {draft_id}
+		Join		Leave
 
-- bear is the current trophy leader with X trophies out of X total drafts!!
+	As well as a followup message to just the user that created the draft:
+
+		Start the draft when everyone joins!
+		Start		Close
+
+	Whenever a user clicks the join button, their username will be added to the first message
+
+	When the creator clicks the start button, the bot will take all the users that have joined,
+	shuffle them up, and print out a seating chart along with pairings for round 1 including
+	a bye if there is an odd number of players.
+
+	Behind the scenes, a new row will be added to the Drafts table to record timestamps and
+	which cube was drafted
+
+/report (TODO)
+
+	Allows the user that fired the command to report their draft results
+
+	Submitted results will be added as a row to the Records table that include:
+		draft_id
+		user_id
+		wins
+		losses
+		draws
+		image_url
+		colors
+		timestamps
+
+/record
+
+	Sends message with the following content based on the user that called the command:
+		{user} has drafted {total_draft} times
+		{user} has trophied {trophies} times
+		total wins: {total_wins}
+		total losses: {total_losses}
+		total draws: {total_draws}
+		drafter since: {date of first draft recorded}
+
+/decks 0-3 tempocube
+
+	Sends message with attached deck images recorded from tempocube drafts that have an 0-3 record
+
+/decks 3-0
+
+	Without a cube_id, sends a message with attached deck images recorded by the user that have a 3-0 record
+		
+/trophyleader
+
+	Sends a message with the following content based on which user has the most 3-0 records
+
+		{user} is the current trophy leader with {total_trophies} trophies out of {total_drafts} total drafts!!
 
 
 
+Sequelize Table Schema
 
+Drafts
+	id		int
+	cube_id		int
+	status		string (open, closed)
+	date		date
+	created_at	datetime
+	updated_at	datetime
 
-Structure:
+	-- private	bool (true for hidden draft that won't appear in reporting, use for testing or unreported drafts, false otherwise)
 
-Player class
-- static methods to search for players or to perform player-relevant actions
-- create a Player class for use in a draft
-
-Draft class
-- Draft-specific methods
-- create one with a unique id when starting a draft
-
-Main class
-- handle discord commands
-
-
-Sequelize Tables
-Drafts (id, cubecobra_id, status, date, created_at)
-Records (id, username(user id?), wins, losses, draws, img_url, created_at)
-
-
-
+Records
+	id		int
+	user_id		int
+	wins		int
+	losses		int
+	draws		int
+	img_url		text (not sure the best way to handle this yet, images will be fairly large, taken from phone cameras)
+	colors		string (capitalized string of sorted color symbols, ex: 'U', 'RG', 'WUBRG')
+	created_at	datetime
+	updated_at	datetime

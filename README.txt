@@ -26,7 +26,9 @@ Current main TODO list
 
 Ideas backlog
 - Autocomplete cubecobra id input with cubes drafted before (in drafts table)
-- async virtual drafting option
+- async virtual drafting option, done either in DMs or as ephemeral messages in a dedicated channel
+- When a player reports, if that draft makes them the new trophyleader, send a message stating that
+- A year after a player reports their first result, send them an anniversary message with their first deck pic
 
 Slash Command Example Uses
 
@@ -57,7 +59,7 @@ Slash Command Example Uses
 	Whenever a user clicks the join button, their username will be added to the first message
 
 	When the creator clicks the start button, the bot will take all the users that have joined,
-	shuffle them up, and print out a seating chart along with pairings for round 1 including
+	shuffle them up, and print out a seating chart along with pairings for round 1 and
 	a bye if there is an odd number of players.
 
 	Behind the scenes, a new row will be added to the Drafts table to record timestamps and

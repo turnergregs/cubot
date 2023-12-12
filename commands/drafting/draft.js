@@ -1,4 +1,4 @@
-const { Client, SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js');
+const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js');
 const { Drafts } = require('../../dbObjects.js');
 
 module.exports = {

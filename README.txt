@@ -27,7 +27,8 @@ Current main TODO list
 Ideas backlog
 - Autocomplete cubecobra id input with cubes drafted before (in drafts table)
 - async virtual drafting option, done either in DMs or as ephemeral messages in a dedicated channel
-- When a player reports, if that draft makes them the new trophyleader, send a message stating that
+- When a player reports, if that draft makes them the new trophyleader, send a message stating so
+- Add 'tag' option to /report command, letting someone describe their results with one or more string tags
 - A year after a player reports their first result, send them an anniversary message with their first deck pic
 
 Slash Command Example Uses

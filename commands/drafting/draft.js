@@ -8,11 +8,16 @@ module.exports = {
 		.addStringOption(option =>
 			option
 				.setName('cubecobra_id')
-				.setDescription('The id of the cube')),
+				.setDescription('The id of the cube')
+				.setRequired(true))
+		.addBooleanOption(option =>
+			option
+				.setName('private')
+				.setDescription('unrecorded draft?')),
 	async execute(interaction) {
 		// error handling
-		const cubecobra_id = interaction.options.getString('cubecobra_id') ?? '';
-		if(cubecobra_id == ''){
+		const cubecobraId = interaction.options.getString('cubecobra_id') ?? '';
+		if(cubecobraId == ''){
 			await interaction.reply(`invalid cube id`);
 			return;
 		}
@@ -20,15 +25,16 @@ module.exports = {
 		// create draft object
 		date = new Date();
 		const draft = await Drafts.create({ 
-			cube_id: cubecobra_id, 
+			cubeId: cubecobraId, 
 			status: 'open',
-			date: date.getDate()
+			private: interaction.options.getBoolean('private') || false,
+			date: date.toISOString().split('T')[0]
 		});
 
 		// set up info about drafters
 		const drafters = [];
 		const getContent = function(drafters) {
-			content = `Created ${cubecobra_id} draft: ${draft.id}`;
+			content = `Created ${cubecobraId} draft: ${draft.id}`;
 			for(drafter of drafters){
 				content += `\n${drafter.username}`;
 			}
@@ -51,7 +57,7 @@ module.exports = {
 
 		// send draft message with join/leave buttons
 		const response = await interaction.reply({
-			content: `Created ${cubecobra_id} draft: ${draft.id}`,
+			content: `Created ${cubecobraId} draft: ${draft.id}`,
 			components: [buttonRow]
 		});
 
@@ -124,7 +130,7 @@ module.exports = {
 			if(buttonId == 'start'){
 				// starting draft
 				const startMessage = await i.channel.send({
-					content: `${cubecobra_id} draft! (${drafters.length} players)`
+					content: `${cubecobraId} draft! (${drafters.length} players)`
 				});
 				await interaction.deleteReply();
 
@@ -160,14 +166,15 @@ module.exports = {
 					pairingText += `\n${pairing[0]} vs ${pairing[1]}`;
 				}
 
+				await Drafts.update({players: drafters.length}, {where: {id: draft.id}});
 				await startMessage.reply({content: pairingText});
 
 
 			} else if(buttonId == 'close'){
 				await i.followUp({content: `closing draft`});
 				await interaction.deleteReply();
+				await Drafts.update({status: 'closed'}, {where: {id: draft.id}});
 			}
-			await Drafts.update({status: 'closed'}, {where: {id: draft.id}});
 		});
 	},
 };

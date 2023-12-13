@@ -5,8 +5,11 @@ module.exports = (sequelize, DataTypes) => {
 			autoIncrement: true,
 	        primaryKey: true
 		},
-		cube_id: DataTypes.STRING,
+		cubeId: DataTypes.STRING,
 		status: DataTypes.STRING,
-		date: DataTypes.DATE,
+		players: DataTypes.INTEGER,
+		private: DataTypes.BOOLEAN,
+		date: DataTypes.DATEONLY,
+		timestamps: true
 	});
 };

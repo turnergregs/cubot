@@ -5,8 +5,8 @@ module.exports = (sequelize, DataTypes) => {
 			autoIncrement: true,
 	        primaryKey: true
 		},
-		draft_id: DataTypes.INTEGER,
-		user_id: DataTypes.STRING,
+		draftId: DataTypes.INTEGER,
+		userId: DataTypes.STRING,
 		wins: DataTypes.INTEGER,
 		losses: DataTypes.INTEGER,
 		draws: DataTypes.INTEGER,

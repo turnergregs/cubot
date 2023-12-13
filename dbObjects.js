@@ -10,30 +10,7 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 const Drafts = require('./models/Drafts.js')(sequelize, Sequelize.DataTypes);
 const Records = require('./models/Records.js')(sequelize, Sequelize.DataTypes);
 
-Records.belongsTo(Drafts, { foreignKey: 'draft_id', as: 'draft' });
-
-// Reflect.defineProperty(Users.prototype, 'addItem', {
-// 	value: async item => {
-// 		const userItem = await UserItems.findOne({
-// 			where: { user_id: this.user_id, item_id: item.id },
-// 		});
-
-// 		if (userItem) {
-// 			userItem.amount += 1;
-// 			return userItem.save();
-// 		}
-
-// 		return UserItems.create({ user_id: this.user_id, item_id: item.id, amount: 1 });
-// 	},
-// });
-
-// Reflect.defineProperty(Users.prototype, 'getItems', {
-// 	value: () => {
-// 		return UserItems.findAll({
-// 			where: { user_id: this.user_id },
-// 			include: ['item'],
-// 		});
-// 	},
-// });
+Records.belongsTo(Drafts, { foreignKey: 'draftId', as: 'draft' });
+Drafts.hasMany(Records, { foreignKey: 'draftId', as: 'records'});
 
 module.exports = { Drafts, Records };

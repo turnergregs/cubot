@@ -111,12 +111,14 @@ Sequelize Table Schema
 Drafts
 	id		int
 	cube_id		int
-	status		string (open, closed)
+	status		string	(open, closed)
 	date		date
 	created_at	datetime
 	updated_at	datetime
 
-	-- private	bool (true for hidden draft that won't appear in reporting, use for testing or unreported drafts, false otherwise)
+	-- type		string	(standard, rotisserie, team, etc.)
+	-- async	int	(1 for async draft, 0 otherwise)
+	-- private	bool	(true for hidden draft that won't appear in reporting, use for testing or unreported drafts, false otherwise)
 
 Records
 	id		int
@@ -124,7 +126,9 @@ Records
 	wins		int
 	losses		int
 	draws		int
-	img_url		text (not sure the best way to handle this yet, images will be fairly large, taken from phone cameras)
-	colors		string (capitalized string of sorted color symbols, ex: 'U', 'RG', 'WUBRG')
+	img_url		text	(not sure the best way to handle this yet, images will be fairly large, taken from phone cameras)
+	colors		string	(capitalized string of sorted color symbols, ex: 'U', 'RG', 'WUBRG')
 	created_at	datetime
 	updated_at	datetime
+
+	tags		string	(artifacts, enchantress, spellslinger, control, aggro, opposition, tinker, storm, etc.)

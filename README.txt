@@ -9,7 +9,7 @@ General
 
 Drafting
 /draft {cubecobra_id}	- Start recording an IRL cube draft
-/report {draft_id}	- Report the results of an IRL cube draft
+/report {draft_id} {img}- Report the results of an IRL cube draft
 
 Analytics
 /record {username}	- Return the full draft record of a user

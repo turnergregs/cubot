@@ -39,23 +39,18 @@ module.exports = {
 			.addOptions(
 				new StringSelectMenuOptionBuilder()
 					.setLabel('0')
-					.setDescription('0')
 					.setValue('0'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('1')
-					.setDescription('1')
 					.setValue('1'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('2')
-					.setDescription('2')
 					.setValue('2'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('3')
-					.setDescription('3')
 					.setValue('3'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('4')
-					.setDescription('4')
 					.setValue('4'),
 			);
 
@@ -68,23 +63,18 @@ module.exports = {
 			.addOptions(
 				new StringSelectMenuOptionBuilder()
 					.setLabel('0')
-					.setDescription('0')
 					.setValue('0'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('1')
-					.setDescription('1')
 					.setValue('1'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('2')
-					.setDescription('2')
 					.setValue('2'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('3')
-					.setDescription('3')
 					.setValue('3'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('4')
-					.setDescription('4')
 					.setValue('4'),
 			);
 
@@ -97,23 +87,18 @@ module.exports = {
 			.addOptions(
 				new StringSelectMenuOptionBuilder()
 					.setLabel('0')
-					.setDescription('0')
 					.setValue('0'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('1')
-					.setDescription('1')
 					.setValue('1'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('2')
-					.setDescription('2')
 					.setValue('2'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('3')
-					.setDescription('3')
 					.setValue('3'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('4')
-					.setDescription('4')
 					.setValue('4'),
 			);
 
@@ -126,23 +111,18 @@ module.exports = {
 			.addOptions(
 				new StringSelectMenuOptionBuilder()
 					.setLabel('W')
-					.setDescription('W')
 					.setValue('W'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('U')
-					.setDescription('U')
 					.setValue('U'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('B')
-					.setDescription('B')
 					.setValue('B'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('R')
-					.setDescription('R')
 					.setValue('R'),
 				new StringSelectMenuOptionBuilder()
 					.setLabel('G')
-					.setDescription('G')
 					.setValue('G'))
 			.setMinValues(1)
 			.setMaxValues(5);

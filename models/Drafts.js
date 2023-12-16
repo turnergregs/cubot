@@ -8,8 +8,8 @@ module.exports = (sequelize, DataTypes) => {
 		cubeId: DataTypes.STRING,
 		status: DataTypes.STRING,
 		players: DataTypes.INTEGER,
+		type: DataTypes.STRING,
 		private: DataTypes.BOOLEAN,
-		date: DataTypes.DATEONLY,
-		timestamps: true
+		date: DataTypes.DATEONLY
 	});
 };

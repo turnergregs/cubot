@@ -36,6 +36,20 @@ module.exports = {
 			} catch (error) {
 				console.error(error);
 			}
+		} else if(interaction.isModalSubmit()){
+			// handle modal submit
+			try {
+				const idBase = interaction.customId.split(' ')[0];
+				switch(idBase){
+					case 'deckSubmit':
+						await interaction.client.commands.get('report').modalSubmit(interaction);
+						break;
+					default:
+						console.log('interaction not found');
+				}
+			} catch (error) {
+				console.error(error);
+			}
 		} else{
 			return;
 		}

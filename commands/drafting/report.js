@@ -1,4 +1,4 @@
-const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder, ActionRowBuilder } = require('discord.js');
+const { TextInputStyle, ModalBuilder, TextInputBuilder, ComponentType, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder, ActionRowBuilder } = require('discord.js');
 const { Drafts, Records } = require('../../dbObjects.js');
 
 module.exports = {
@@ -11,10 +11,39 @@ module.exports = {
 					.setDescription('The draft you\'re reporting for')
 					.setRequired(true)
 					.setAutocomplete(true))
+		.addIntegerOption(option => 
+			option.setName('wins')
+					.setDescription('Wins')
+					.setRequired(true)
+					.addChoices(
+						{ name: '3', value: 3 },
+						{ name: '2', value: 2 },
+						{ name: '1', value: 1 },
+						{ name: '0', value: 0 }
+					))
+		.addIntegerOption(option => 
+			option.setName('losses')
+					.setDescription('Losses')
+					.setRequired(true)
+					.addChoices(
+						{ name: '3', value: 3 },
+						{ name: '2', value: 2 },
+						{ name: '1', value: 1 },
+						{ name: '0', value: 0 }
+					))
 		.addAttachmentOption(option =>
 			option.setName('img')
 					.setDescription('Share a pic of your deck!')
-					.setRequired(true)),
+					.setRequired(true))
+		.addIntegerOption(option => 
+			option.setName('draws')
+					.setDescription('Draws')
+					.addChoices(
+						{ name: '3', value: 3 },
+						{ name: '2', value: 2 },
+						{ name: '1', value: 1 },
+						{ name: '0', value: 0 }
+					)),
 	async autocomplete(interaction) {
 		const focusedValue = interaction.options.getFocused();
 
@@ -27,117 +56,72 @@ module.exports = {
 			filtered.map(choice => ({ name: choice.name, value: choice.value })),
 		);
 	},
+	async modalSubmit(interaction){
+		const record = await Records.findByPk(interaction.customId.split(' ')[1]);
+
+		const colorsRaw = interaction.fields.getTextInputValue('colorInput');
+		const availableColors = ['W', 'U', 'B', 'R', 'G', 'C'];
+		const colorsInput = colorsRaw.split('');
+		const colorsFinal = availableColors.filter(c => colorsInput.includes(c));
+		record.colors = colorsFinal.join('');
+
+		const tagsRaw = interaction.fields.getTextInputValue('tagsInput').toLowerCase();
+		const tagsInput = tagsRaw.split(/[ ,]+/);
+		const tagsFinal = JSON.stringify(tagsInput);
+		record.tags = tagsFinal;
+
+		record.save();
+
+		await interaction.reply('Thank you! Your input has been recorded');
+	},
 	async execute(interaction) {
 
-		const draftId = interaction.options.getInteger('draft')
+		const draftId = interaction.options.getInteger('draft');
+		const draft = await Drafts.findByPk(draftId);
+		// handle if this user has already reported
+		const priorRecord = await Records.findOne({ where: {draftId: draftId, userId: interaction.user.id}});
+		if(priorRecord){
+			await interaction.reply(`You already reported for this draft!`);
+			return;
+		}
 
-		const content = `Thank you for reporting! Please fill out a little extra info:`;
-
-		const winSelect = new StringSelectMenuBuilder()
-			.setCustomId('wins')
-			.setPlaceholder('Wins')
-			.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel('0')
-					.setValue('0'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('1')
-					.setValue('1'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('2')
-					.setValue('2'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('3')
-					.setValue('3'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('4')
-					.setValue('4'),
-			);
-
-		const winRow = new ActionRowBuilder()
-			.addComponents(winSelect);
-
-		const lossSelect = new StringSelectMenuBuilder()
-			.setCustomId('losses')
-			.setPlaceholder('Losses')
-			.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel('0')
-					.setValue('0'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('1')
-					.setValue('1'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('2')
-					.setValue('2'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('3')
-					.setValue('3'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('4')
-					.setValue('4'),
-			);
-
-		const lossRow = new ActionRowBuilder()
-			.addComponents(lossSelect);
-
-		const drawSelect = new StringSelectMenuBuilder()
-			.setCustomId('draws')
-			.setPlaceholder('Draws')
-			.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel('0')
-					.setValue('0'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('1')
-					.setValue('1'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('2')
-					.setValue('2'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('3')
-					.setValue('3'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('4')
-					.setValue('4'),
-			);
-
-		const drawRow = new ActionRowBuilder()
-			.addComponents(drawSelect);
-
-		const colorSelect = new StringSelectMenuBuilder()
-			.setCustomId('colors')
-			.setPlaceholder('Colors')
-			.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel('W')
-					.setValue('W'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('U')
-					.setValue('U'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('B')
-					.setValue('B'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('R')
-					.setValue('R'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('G')
-					.setValue('G'))
-			.setMinValues(1)
-			.setMaxValues(5);
-
-		const colorRow = new ActionRowBuilder()
-			.addComponents(colorSelect);
-
-		await interaction.reply({
-			content: content,
-			components: [winRow, lossRow, drawRow, colorRow],
-			ephemeral: true
+		const report = await Records.create({
+			draftId: draftId,
+			userId: interaction.user.id,
+			wins: interaction.options.getInteger('wins'),
+			losses: interaction.options.getInteger('losses'),
+			draws: interaction.options.getInteger('draws') || 0,
+			img: JSON.stringify(interaction.options.getAttachment('img'))
 		});
 
+		const modal = new ModalBuilder()
+			.setCustomId('deckSubmit '+report.id)
+			.setTitle('Thank you! Please describe your deck:');
+
+
+		const colorInput = new TextInputBuilder()
+			.setCustomId('colorInput')
+			.setLabel("What were your deck's colors?")
+			.setPlaceholder('W, UB, RUG, WUBRG, C, etc.')
+			.setMaxLength(5)
+			.setMinLength(1)
+			.setStyle(TextInputStyle.Short)
+			.setRequired(true);
+
+		const tagsInput = new TextInputBuilder()
+			.setCustomId('tagsInput')
+			.setLabel("Describe your deck!")
+			.setPlaceholder('Artifacts, Enchantments, Aggro, Control, Storm, etc.')
+			.setStyle(TextInputStyle.Short)
+			.setRequired(true);
+
+		const colorRow = new ActionRowBuilder().addComponents(colorInput);
+		const tagsRow = new ActionRowBuilder().addComponents(tagsInput);
+		modal.addComponents(colorRow, tagsRow);
+
+		await interaction.showModal(modal);
+
 		// close the draft once everyone has reported
-		const draft = await Drafts.findByPk(draftId);
 		const records = await Records.findAll({where: {draftId: draftId} })
 		if(records.length >= draft.players){
 			draft.status = 'closed';

@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
 		wins: DataTypes.INTEGER,
 		losses: DataTypes.INTEGER,
 		draws: DataTypes.INTEGER,
-		img: DataTypes.TEXT,
-		timestamps: true
+		img: DataTypes.JSON,
+		colors: DataTypes.STRING,
+		tags: DataTypes.TEXT
 	});
 };

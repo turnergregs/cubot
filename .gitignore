@@ -1,3 +1,4 @@
 node_modules
 config.json
 script.js
+database.sqlite

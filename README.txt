@@ -9,7 +9,7 @@ General
 
 Drafting
 /draft {cubecobra_id}	- Start recording an IRL cube draft
-/report {draft_id}	- Report the results of an IRL cube draft
+/report {draft_id} {img}- Report the results of an IRL cube draft
 
 Analytics
 /record {username}	- Return the full draft record of a user
@@ -27,7 +27,8 @@ Current main TODO list
 Ideas backlog
 - Autocomplete cubecobra id input with cubes drafted before (in drafts table)
 - async virtual drafting option, done either in DMs or as ephemeral messages in a dedicated channel
-- When a player reports, if that draft makes them the new trophyleader, send a message stating that
+- When a player reports, if that draft makes them the new trophyleader, send a message stating so
+- Add 'tag' option to /report command, letting someone describe their results with one or more string tags
 - A year after a player reports their first result, send them an anniversary message with their first deck pic
 
 Slash Command Example Uses
@@ -110,12 +111,14 @@ Sequelize Table Schema
 Drafts
 	id		int
 	cube_id		int
-	status		string (open, closed)
+	status		string	(open, closed)
 	date		date
 	created_at	datetime
 	updated_at	datetime
 
-	-- private	bool (true for hidden draft that won't appear in reporting, use for testing or unreported drafts, false otherwise)
+	-- type		string	(standard, rotisserie, team, etc.)
+	-- async	int	(1 for async draft, 0 otherwise)
+	-- private	bool	(true for hidden draft that won't appear in reporting, use for testing or unreported drafts, false otherwise)
 
 Records
 	id		int
@@ -123,7 +126,9 @@ Records
 	wins		int
 	losses		int
 	draws		int
-	img_url		text (not sure the best way to handle this yet, images will be fairly large, taken from phone cameras)
-	colors		string (capitalized string of sorted color symbols, ex: 'U', 'RG', 'WUBRG')
+	img_url		text	(not sure the best way to handle this yet, images will be fairly large, taken from phone cameras)
+	colors		string	(capitalized string of sorted color symbols, ex: 'U', 'RG', 'WUBRG')
 	created_at	datetime
 	updated_at	datetime
+
+	tags		string	(artifacts, enchantress, spellslinger, control, aggro, opposition, tinker, storm, etc.)

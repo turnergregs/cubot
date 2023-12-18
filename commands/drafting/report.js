@@ -1,5 +1,7 @@
 const { TextInputStyle, ModalBuilder, TextInputBuilder, ComponentType, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder, ActionRowBuilder } = require('discord.js');
 const { Drafts, Records } = require('../../dbObjects.js');
+const { Op } = require('sequelize');
+
 
 module.exports = {
 
@@ -79,7 +81,7 @@ module.exports = {
 		const draft = await Drafts.findByPk(draftId);
 		// handle if this user has already reported
 		const priorRecord = await Records.findOne({ where: {draftId: draftId, userId: interaction.user.id}});
-		if(priorRecord){
+		if(priorRecord.wins){
 			await interaction.reply(`You already reported for this draft!`);
 			return;
 		}
@@ -91,10 +93,13 @@ module.exports = {
 			return;
 		}
 
+		const wins = interaction.options.getInteger('wins');
+		const losses = interaction.options.getInteger('losses');
+		const draws = interaction.options.getInteger('draws') || 0;
 		report.set({
-			wins: interaction.options.getInteger('wins'),
-			losses: interaction.options.getInteger('losses'),
-			draws: interaction.options.getInteger('draws') || 0,
+			wins: wins,
+			losses: losses,
+			draws: draws,
 			img: JSON.stringify(interaction.options.getAttachment('img'))
 		});
 		report.save();
@@ -133,5 +138,38 @@ module.exports = {
 			draft.status = 'closed';
 			draft.save();
 		}
+
+		// assign new trophyleader
+		if(wins >= 3 && losses == 0){
+			const trophyLeaderRoleId = '1185612501891682366';
+			await interaction.guild.members.fetch();
+			const trophyLeaderRole = await interaction.guild.roles.cache.get(trophyLeaderRoleId)
+			const trophyLeader = trophyLeaderRole.members.first();
+			if(trophyLeader !== interaction.member){
+				const currentLeaderTrophies = await Records.findAndCountAll({
+					where: {
+						wins: { [Op.gte]: 3 },
+						losses: 0,
+						userId: trophyLeader.user.id
+					}
+				});
+				const newLeaderTrophies = await Records.findAndCountAll({
+					where: {
+						wins: { [Op.gte]: 3 },
+						losses: 0,
+						userId: interaction.user.id
+					}
+				});
+				
+				if(newLeaderTrophies.count > currentLeaderTrophies.count){
+					trophyLeader.roles.remove(trophyLeaderRole);
+					interaction.member.roles.add(trophyLeaderRole);
+
+					const displayName = interaction.member.nickname ? interaction.member.nickname : interaction.member.user.username;
+					await interaction.followUp(`Congratulations ${displayName}, you are the new <@&${trophyLeaderRoleId}>!`);
+				}
+			}
+		}
+
 	},
 };

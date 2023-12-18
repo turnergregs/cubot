@@ -14,8 +14,8 @@ module.exports = {
 			await interaction.reply(`invalid cube id`)
 		}else{
 			const seed = Math.random(999999999);
-			await interaction.reply(`p1p1 from ${cubecobra_id}!\n
-									https://cubecobra.com/cube/samplepackimage/${cubecobra_id}/${seed}`);
+			const url = `https://cubecobra.com/cube/samplepackimage/${cubecobra_id}/${seed}`;
+			await interaction.reply(`p1p1 from ${cubecobra_id}!\n${url}`);
 		}
 	},
 };

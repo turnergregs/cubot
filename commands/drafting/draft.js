@@ -1,5 +1,5 @@
-const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js');
-const { Drafts } = require('../../dbObjects.js');
+const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, UserSelectMenuBuilder, ActionRowBuilder, ComponentType } = require('discord.js');
+const { Drafts, Records } = require('../../dbObjects.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -36,9 +36,12 @@ module.exports = {
 		const getContent = function(drafters) {
 			content = `Created ${cubecobraId} draft: ${draft.id}`;
 			for(drafter of drafters){
-				content += `\n${drafter.username}`;
+				content += `\n${drafter.nickname ? drafter.nickname : drafter.user.username}`;
 			}
 			return content;
+		};
+		const getDisplayName = function(member){
+			return member.nickname ? member.nickname : member.user.username;
 		};
 
 		// create join/leave button row
@@ -68,19 +71,19 @@ module.exports = {
 		});
 
 		collector.on('collect', async i => {
-			const user = i.user;
+			const member = i.member;
 			const buttonId = i.customId;
 			if(buttonId == 'join'){
-				index = drafters.indexOf(user);
+				index = drafters.indexOf(member);
 				if(index == -1){
-					drafters.push(user);
+					drafters.push(member);
 				}
 				await i.update({
 					content: getContent(drafters), 
 					components: [buttonRow] 
 				});
 			} else if(buttonId == 'leave'){
-				index = drafters.indexOf(user);
+				index = drafters.indexOf(member);
 				if(index > -1){
 					drafters.splice(index, 1);
 				}
@@ -91,7 +94,7 @@ module.exports = {
 			}
 		});
 
-		// set up start/close buttons for draft owner
+		// set up draft manager buttons for draft owner
 		const start = new ButtonBuilder()
 			.setCustomId('start')
 			.setLabel('Start')
@@ -102,37 +105,64 @@ module.exports = {
 			.setLabel('Close')
 			.setStyle(ButtonStyle.Secondary);
 
-		const ephemButtonRow = new ActionRowBuilder()
+		const startCloseButtonRow = new ActionRowBuilder()
 			.addComponents(start, close);
+
+		const addUserSelect = new UserSelectMenuBuilder({
+			custom_id: 'addUser',
+			placeholder: 'Manually add users',
+			max_values: 8,
+		});
+
+		const addUserRow = new ActionRowBuilder()
+			.addComponents(addUserSelect);
+
+		const kickUserSelect = new UserSelectMenuBuilder({
+			custom_id: 'kickUser',
+			placeholder: 'Manually kick users',
+			max_values: 8,
+		});
+
+		const kickUserRow = new ActionRowBuilder()
+			.addComponents(kickUserSelect);
 
 		// send message to draft owner to start or close draft
 		const followUp = await interaction.followUp({
 			content: 'Start the draft when everyone joins!',
-			components: [ephemButtonRow],
+			components: [startCloseButtonRow, addUserRow, kickUserRow],
 			ephemeral: true
 		});
 
 		// set up handler for start/close button clicks
-		const followUpCollector = followUp.createMessageComponentCollector({
-			componentType: ComponentType.Button,
+		const startCloseCollector = followUp.createMessageComponentCollector({
 			time: 3_600_000
 		});
 
-		followUpCollector.on('collect', async i => {
-			ephemButtonRow.components[0].setDisabled(true);
-			ephemButtonRow.components[1].setDisabled(true);
-			await i.update({
-				content: getContent(drafters),
-				components: [ephemButtonRow]
-			});
-
-			const buttonId = i.customId;
-			if(buttonId == 'start'){
+		startCloseCollector.on('collect', async i => {
+			const disableButtons = async function(){
+				startCloseButtonRow.components[0].setDisabled(true);
+				startCloseButtonRow.components[1].setDisabled(true);
+				await i.update({
+					content: getContent(drafters),
+					components: [startCloseButtonRow, addUserRow, kickUserRow]
+				});
+			};
+			
+			if(i.customId == 'start'){
+				await disableButtons();
 				// starting draft
 				const startMessage = await i.channel.send({
 					content: `${cubecobraId} draft! (${drafters.length} players)`
 				});
 				await interaction.deleteReply();
+
+				// lock the current drafters into the draft to have a record of people who need to report.
+				drafters.forEach(async (drafter) => {
+					await Records.create({
+						draftId: draft.id,
+						userId: drafter.user.id
+					});
+				})
 
 				// currently this just randomizes the drafters
 				// in the future, we could implement a ladder or elo system to make a more genuine tournament bracket
@@ -144,7 +174,7 @@ module.exports = {
 				// randomized draft seating chart
 				let seatingText = "Draft Seating:";
 				for(let i = 0; i < shuffled.length; i++){
-					seatingText += `\n${i+1}: ${shuffled[i].username}`;
+					seatingText += `\n${i+1}: ${getDisplayName(shuffled[i])}`;
 				}
 
 				await startMessage.reply({content: seatingText});
@@ -152,13 +182,13 @@ module.exports = {
 				// build pairings, including a bye for odd number players
 				pairings = [];
 				if(shuffled.length % 2 !== 0){
-					shuffled.push({username: "bye"});
+					shuffled.push({nickname: "bye"});
 				}
 
 				// this will make the pairings cross-pod
 				const matches = shuffled.length / 2;
 				for(let i = 0; i < matches; i += 1){
-					pairings.push([shuffled[i].username, shuffled[i+matches].username]);
+					pairings.push([getDisplayName(shuffled[i]), getDisplayName(shuffled[i+matches])]);
 				}
 
 				let pairingText = "Round 1 Pairings:";
@@ -170,10 +200,46 @@ module.exports = {
 				await startMessage.reply({content: pairingText});
 
 
-			} else if(buttonId == 'close'){
+			} else if(i.customId == 'close'){
+				await disableButtons();
 				await i.followUp({content: `closing draft`});
 				await interaction.deleteReply();
 				await Drafts.update({status: 'closed'}, {where: {id: draft.id}});
+			} else if(i.customId == 'addUser'){
+
+				const newDrafters = [];
+
+				i.members.forEach(member => {
+					if(drafters.indexOf(member) == -1){
+						drafters.push(member);
+						newDrafters.push(getDisplayName(member));
+					}
+				})	
+
+				await response.edit({
+					content: getContent(drafters), 
+					components: [buttonRow] 
+				});
+
+				await i.reply(`Added ${newDrafters.join(', ')} to the draft!`);
+			} else if(i.customId == 'kickUser'){
+
+				const kickDrafters = [];
+
+				i.members.forEach(member => {
+					index = drafters.indexOf(member);
+					if(index > -1){
+						drafters.splice(index, 1);
+						kickDrafters.push(getDisplayName(member));
+					}
+				})	
+
+				await response.edit({
+					content: getContent(drafters), 
+					components: [buttonRow] 
+				});
+
+				await i.reply(`Removed ${kickDrafters.join(', ')} from the draft!`);
 			}
 		});
 	},

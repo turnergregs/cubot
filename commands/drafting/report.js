@@ -33,8 +33,7 @@ module.exports = {
 					))
 		.addAttachmentOption(option =>
 			option.setName('img')
-					.setDescription('Share a pic of your deck!')
-					.setRequired(true))
+					.setDescription('Share a pic of your deck!'))
 		.addIntegerOption(option => 
 			option.setName('draws')
 					.setDescription('Draws')
@@ -85,14 +84,21 @@ module.exports = {
 			return;
 		}
 
-		const report = await Records.create({
-			draftId: draftId,
-			userId: interaction.user.id,
+		// pull up existing report and update with the report info
+		const report = await Records.findOne({ where: {draftId: draftId, userId: interaction.user.id}});
+		if(!report){
+			await interaction.reply(`You didn't participate in that draft!`);
+			return;
+		}
+
+		report.set({
 			wins: interaction.options.getInteger('wins'),
 			losses: interaction.options.getInteger('losses'),
 			draws: interaction.options.getInteger('draws') || 0,
 			img: JSON.stringify(interaction.options.getAttachment('img'))
 		});
+		report.save();
+		
 
 		const modal = new ModalBuilder()
 			.setCustomId('deckSubmit '+report.id)

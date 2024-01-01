@@ -55,7 +55,13 @@ module.exports = {
 					count += 1;
 				});
 			}
-			await i.reply({content: `Added ${count} role/s!`, ephemeral: true});
+			try {
+				await i.reply({content: `Added ${count} role/s!`, ephemeral: true});
+			} catch(error){
+				console.log("Error sending roles message:");
+				console.log(error);
+			}
+			
 		});
 	},
 };

@@ -78,6 +78,7 @@ module.exports = {
 		const script = interaction.options.getString('script');
 
 		let content = "";
+		let updated = 0;
 		let results = {};
 		const id = interaction.options.getInteger('id');
 		switch(script){

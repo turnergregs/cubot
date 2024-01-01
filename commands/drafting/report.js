@@ -133,7 +133,7 @@ module.exports = {
 		await interaction.showModal(modal);
 
 		// close the draft once everyone has reported
-		const records = await Records.findAll({where: {draftId: draftId} })
+		const records = await Records.findAll({where: {draftId: draftId, wins: { [Op.ne]: null }} })
 		if(records.length >= draft.players){
 			draft.status = 'closed';
 			draft.save();

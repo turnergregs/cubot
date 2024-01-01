@@ -28,6 +28,7 @@ module.exports = {
 					.setRequired(false)),
 	async execute(interaction) {
 
+		await interaction.reply(`starting script`);
 		console.log(`starting scripts`);
 
 		if(interaction.user.username !== 'grenrut'){
@@ -162,7 +163,7 @@ module.exports = {
 
 		const extraContent = [];
 		if(content.length <= 2000){
-			await interaction.reply(content);
+			await interaction.followUp(content);
 		} else {
 			const lines = content.split('\n');
 			let newContent = ``;
@@ -175,7 +176,6 @@ module.exports = {
 				newContent += line + `\n`;
 			}
 			extraContent.push(newContent);
-			await interaction.reply(extraContent.shift());
 			for(const message of extraContent){
 				await interaction.followUp(message);
 			}

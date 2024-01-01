@@ -116,13 +116,13 @@ module.exports = {
 			case "listOpen":
 				results = await getDrafts({status: 'open'});
 				results.forEach(d => {
-					content += `${d.cubeId}(${d.id}) ${d.reported}/${d.players} reported, ${d.date}\n`;
+					content += `${d.cubeId}(${d.id}) ${d.status} - ${d.reported}/${d.players} reported, ${d.date}\n`;
 				})
 				break;
 			case "listAll":
 				results = await getDrafts({});
 				results.forEach(d => {
-					content += `${d.cubeId}(${d.id}) ${d.reported}/${d.players} reported, ${d.date}\n`;
+					content += `${d.cubeId}(${d.id}) ${d.status} - ${d.reported}/${d.players} reported, ${d.date}\n`;
 				})
 				break;
 			case "listOne":
@@ -133,9 +133,10 @@ module.exports = {
 				results = await getDrafts({id: id});
 				if(results.length === 0){
 					content = 'No drafts found for that Id';
+					break;
 				}
 				results.forEach(d => {
-					content += `${d.cubeId}(${d.id}) ${d.reported}/${d.players} reported, ${d.date}\n`;
+					content += `${d.cubeId}(${d.id}) ${d.status} - ${d.reported}/${d.players} reported, ${d.date}\n`;
 				})
 				break;
 			case "listDraftRecords":
@@ -146,11 +147,12 @@ module.exports = {
 				results = await getRecords({draftId: id});
 				if(results.length === 0){
 					content = 'No records found for that draftId';
+					break;
 				}
 				results.forEach(r => {
 					if(r.wins){
 						const draws = r.draws ? r.draws : 0;
-						content += `${r.username}: ${r.wins}-${r.losses}-${draws}`;
+						content += `${r.username}: ${r.wins}-${r.losses}-${draws}\n`;
 					} else{
 						content += `${r.username}: not reported\n`;
 					}

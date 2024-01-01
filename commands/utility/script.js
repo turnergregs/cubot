@@ -51,8 +51,7 @@ module.exports = {
 			let count = 0;
 			let drafts = await Drafts.findAll({where: options});
 			for(draft of drafts){
-				draft.status = 'closed';
-				draft.save();
+				draft.destroy();
 				count += 1;
 			}
 			return count;

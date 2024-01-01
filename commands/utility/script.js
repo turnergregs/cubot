@@ -28,7 +28,14 @@ module.exports = {
 					.setRequired(false)),
 	async execute(interaction) {
 
-		await interaction.reply(`starting script`);
+		try{
+			await interaction.reply(`starting script`);
+		} catch(error){
+			console.log(error);
+			console.log(interaction);
+			return;
+		}
+		
 		console.log(`starting scripts`);
 
 		if(interaction.user.username !== 'grenrut'){

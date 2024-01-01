@@ -93,6 +93,14 @@ module.exports = {
 			return;
 		}
 
+		try{
+			await interaction.reply({content: `starting report`, ephemeral: true});
+		} catch(error){
+			console.log(error);
+			console.log(interaction);
+			return;
+		}
+
 		const wins = interaction.options.getInteger('wins');
 		const losses = interaction.options.getInteger('losses');
 		const draws = interaction.options.getInteger('draws') || 0;

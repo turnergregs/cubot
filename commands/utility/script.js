@@ -11,6 +11,7 @@ module.exports = {
 				.setDescription('Which script to run')
 				.setRequired(true)
 				.addChoices(
+					{ name: 'Open One', value: 'openOne' },
 					{ name: 'Close Open', value: 'closeOpen' },
 					{ name: 'Close All', value: 'closeAll' },
 					{ name: 'Close One', value: 'closeOne' },
@@ -54,6 +55,17 @@ module.exports = {
 			return count;
 		}
 
+		const openDrafts = async function(options){
+			let count = 0;
+			let drafts = await Drafts.findAll({where: options});
+			for(draft of drafts){
+				draft.status = 'open';
+				draft.save();
+				count += 1;
+			}
+			return count;
+		}
+
 		const deleteDrafts = async function(options){
 			let count = 0;
 			let drafts = await Drafts.findAll({where: options});
@@ -88,6 +100,14 @@ module.exports = {
 		let results = {};
 		const id = interaction.options.getInteger('id');
 		switch(script){
+			case "openOne":
+				if(!id){
+					content = 'No draftId provided';
+					break;
+				}
+				updated += await openDrafts({id: id});
+				content = `Opened ${updated} drafts`;
+				break;
 			case "closeOpen":
 				updated += await closeDrafts({status: 'open'});
 				content = `Closed ${updated} open drafts`;

@@ -17,11 +17,8 @@ Analytics
 /trophyleader 		- returns the name of the current trophy leader
 
 Current main TODO list
-1. Implement /report command
-2. Host bot on a server
-3. Server Roles message
-4. Welcome p1p1 message
-5. Implement all the analytics commands
+1. Welcome p1p1 message
+2. Implement all the analytics commands
 
 Ideas backlog
 - Autocomplete cubecobra id input with cubes drafted before (in drafts table)

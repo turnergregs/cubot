@@ -1,9 +1,8 @@
-CuBot is a Magic: The Gathering related bot you can add to your server to help record data about Cube drafts!
+CuBot is a Magic: The Gathering related bot you can add to your server to help run and record data about Cube drafts!
 
 You can operate it using the following slash commands:
 
 General
-/help			- List available commands
 /cube {cubecobra_id}	- Link to a cubecobra cube
 /pack {cubecobra_id}	- Display a sample pack from a cubecobra cube
 

@@ -211,7 +211,8 @@ module.exports = {
 							draftId: draftId, 
 							userId: drafter.user.id,
 							pick: null,
-							active: 0
+							active: 0,
+							date.toISOString().split('T')[0]
 						});
 					}
 					

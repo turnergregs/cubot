@@ -9,8 +9,13 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 
 const Drafts = require('./models/Drafts.js')(sequelize, Sequelize.DataTypes);
 const Records = require('./models/Records.js')(sequelize, Sequelize.DataTypes);
+const Picks = require('./models/Picks.js')(sequelize, Sequelize.DataTypes);
+
 
 Records.belongsTo(Drafts, { foreignKey: 'draftId', as: 'draft' });
 Drafts.hasMany(Records, { foreignKey: 'draftId', as: 'records'});
 
-module.exports = { Drafts, Records };
+Picks.belongsTo(Drafts, { foreignKey: 'draftId', as: 'draft' });
+Drafts.hasMany(Picks, { foreignKey: 'draftId', as: 'records'});
+
+module.exports = { Drafts, Records, Picks };

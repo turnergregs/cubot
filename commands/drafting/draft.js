@@ -10,6 +10,10 @@ module.exports = {
 				.setName('cubecobra_id')
 				.setDescription('The id of the cube')
 				.setRequired(true))
+		.addStringOption(option =>
+			option
+				.setName('type')
+				.setDescription('Regular, Rotisserie')),
 		.addBooleanOption(option =>
 			option
 				.setName('private')
@@ -23,10 +27,12 @@ module.exports = {
 		}
 
 		// create draft object
-		date = new Date();
+		const draftType = interaction.options.getString('type');
+		const date = new Date();
 		const draft = await Drafts.create({ 
 			cubeId: cubecobraId, 
 			status: 'open',
+			type: draftType || 'Regular',
 			private: interaction.options.getBoolean('private') || false,
 			date: date.toISOString().split('T')[0]
 		});
@@ -34,7 +40,7 @@ module.exports = {
 		// set up info about drafters
 		const drafters = [];
 		const getContent = function(drafters) {
-			content = `Created ${cubecobraId} draft: ${draft.id}`;
+			content = `Created ${cubecobraId} ${draftType === 'Regular' ? '' : draftType} draft: ${draft.id}`;
 			for(drafter of drafters){
 				content += `\n${drafter.nickname ? drafter.nickname : drafter.user.username}`;
 			}
@@ -199,6 +205,18 @@ module.exports = {
 				await Drafts.update({players: drafters.length}, {where: {id: draft.id}});
 				await startMessage.reply({content: pairingText});
 
+				if(draftType === 'Rotisserie' && shuffled.length > 0){
+					for(drafter of shuffled){
+						Picks.create({ 
+							draftId: draftId, 
+							userId: drafter.user.id,
+							pick: null,
+							active: 0
+						});
+					}
+					
+					await startMessage.reply({content: '${shuffled[0]}, you pick first! Use the /pick command followed by the draftId(${draftId}) and the card you want to make your pick'});
+				}
 
 			} else if(i.customId == 'close'){
 				await disableButtons();

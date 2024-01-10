@@ -215,7 +215,8 @@ module.exports = {
 							date.toISOString().split('T')[0]
 						});
 					}
-					
+					draft.status = 'picking';
+					draft.save();
 					await startMessage.reply({content: '${shuffled[0]}, you pick first! Use the /pick command followed by the draftId(${draftId}) and the card you want to make your pick'});
 				}
 

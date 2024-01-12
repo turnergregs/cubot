@@ -206,6 +206,7 @@ module.exports = {
 				await startMessage.reply({content: pairingText});
 
 				if(draftType === 'Rotisserie' && shuffled.length > 0){
+					// create pick templates to track drafter order
 					for(drafter of shuffled){
 						Picks.create({ 
 							draftId: draftId, 
@@ -215,9 +216,35 @@ module.exports = {
 							date.toISOString().split('T')[0]
 						});
 					}
+					// set draft status as picking
 					draft.status = 'picking';
 					draft.save();
-					await startMessage.reply({content: '${shuffled[0]}, you pick first! Use the /pick command followed by the draftId(${draftId}) and the card you want to make your pick'});
+
+					// get cardlist from cubecobra and store in temp file to track what's available
+					const https = require('https');
+					const fs = require('node:fs');
+					https.get(`https://cubecobra.com/cube/api/cubelist/${cubecobraId}`, res => {
+						let data = [];
+						
+						res.on('data', chunk => {
+							data.push(chunk);
+						});
+						
+						res.on('end', () => {
+							// const cards = JSON.parse(Buffer.concat(data).toString());
+							const cardString = Buffer.concat(data).toString();
+						
+							fs.writeFile(`/temp/draft${draftId}.txt`, cardString, err => {
+								if(err){
+									console.error(err);
+								}
+			  				});
+						});
+					}).on('error', err => {
+						console.log(`Error pulling cards from ${cubecobraId}: `, err.message);
+					});
+					
+					await startMessage.reply({content: `${shuffled[0]}, you pick first! Use the /pick command followed by the draftId(${draftId}) and the card you want to make your pick`});
 				}
 
 			} else if(i.customId == 'close'){

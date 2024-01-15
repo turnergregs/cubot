@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, UserSelectMenuBuilder, ActionRowBuilder, ComponentType } = require('discord.js');
-const { Drafts, Records } = require('../../dbObjects.js');
+const { Drafts, Records, Picks } = require('../../dbObjects.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -13,7 +13,7 @@ module.exports = {
 		.addStringOption(option =>
 			option
 				.setName('type')
-				.setDescription('Regular, Rotisserie')),
+				.setDescription('Regular, Rotisserie'))
 		.addBooleanOption(option =>
 			option
 				.setName('private')
@@ -27,12 +27,12 @@ module.exports = {
 		}
 
 		// create draft object
-		const draftType = interaction.options.getString('type');
+		const draftType = interaction.options.getString('type') || 'Regular';
 		const date = new Date();
 		const draft = await Drafts.create({ 
 			cubeId: cubecobraId, 
 			status: 'open',
-			type: draftType || 'Regular',
+			type: draftType,
 			private: interaction.options.getBoolean('private') || false,
 			date: date.toISOString().split('T')[0]
 		});
@@ -208,13 +208,15 @@ module.exports = {
 				if(draftType === 'Rotisserie' && shuffled.length > 0){
 					// create pick templates to track drafter order
 					for(drafter of shuffled){
-						Picks.create({ 
-							draftId: draftId, 
-							userId: drafter.user.id,
-							pick: null,
-							active: 0,
-							date.toISOString().split('T')[0]
-						});
+						if(drafter.nickname !== 'bye'){
+							Picks.create({ 
+								draftId: draft.id, 
+								userId: drafter.user.id,
+								pick: null,
+								active: 0,
+								date: date.toISOString().split('T')[0]
+							});
+						}
 					}
 					// set draft status as picking
 					draft.status = 'picking';
@@ -234,7 +236,7 @@ module.exports = {
 							// const cards = JSON.parse(Buffer.concat(data).toString());
 							const cardString = Buffer.concat(data).toString();
 						
-							fs.writeFile(`/temp/draft${draftId}.txt`, cardString, err => {
+							fs.writeFile(`temp/draft${draft.id}.txt`, cardString, err => {
 								if(err){
 									console.error(err);
 								}
@@ -244,7 +246,7 @@ module.exports = {
 						console.log(`Error pulling cards from ${cubecobraId}: `, err.message);
 					});
 					
-					await startMessage.reply({content: `${shuffled[0]}, you pick first! Use the /pick command followed by the draftId(${draftId}) and the card you want to make your pick`});
+					await startMessage.reply({content: `${shuffled[0]}, you pick first! Use the /pick command followed by the draftId(${draft.id}) and the card you want to make your pick`});
 				}
 
 			} else if(i.customId == 'close'){

@@ -16,6 +16,6 @@ Records.belongsTo(Drafts, { foreignKey: 'draftId', as: 'draft' });
 Drafts.hasMany(Records, { foreignKey: 'draftId', as: 'records'});
 
 Picks.belongsTo(Drafts, { foreignKey: 'draftId', as: 'draft' });
-Drafts.hasMany(Picks, { foreignKey: 'draftId', as: 'records'});
+Drafts.hasMany(Picks, { foreignKey: 'draftId', as: 'picks'});
 
 module.exports = { Drafts, Records, Picks };
